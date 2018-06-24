@@ -1,0 +1,183 @@
+
+body {
+    background-image: url("/static/background.png");
+    background-repeat: repeat-x;
+}
+
+body, div {
+    margin:0px;
+    padding:0px;
+    font-family: Verdana, Geneva, sans-serif;
+}
+
+div.title {
+    font-size: 140%;
+    font-weight: bold;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 2px solid white;
+}
+
+#bigPicture {
+    z-index: 998;
+    background-image: url('waiting.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 150px 150px;
+    box-sizing: border-box;
+    max-height:100%;
+    max-width:100%;
+    width:100%;
+    position: absolute;
+    background-color: black;
+    text-align: center;
+    margin:0px;
+    padding:0px;
+}
+
+#videoPlayer {
+   max-width:100%;
+   width:100%;
+
+}
+
+ div.videoDiv {
+    z-index: 998;
+    background-image: url('waiting.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 150px 150px;
+    box-sizing: border-box;
+    position: absolute;
+    background-color: black;
+    text-align: center;
+    margin:0px;
+    padding:0px;
+}
+
+
+#videoPlayer
+{
+    z-index: 1000;
+}
+
+
+img.bigPicture {
+  image-orientation: from-image;
+}
+
+div.bigPictureName {
+    z-index: 999;
+    padding-top:3px;
+    padding-bottom:3px;
+    padding-left:8px;
+    padding-right:8px;
+    opacity: 0.4;
+    background-color:black;
+    color: white;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+
+ul.photos {
+    margin:0px;
+    padding: 5px;
+}
+
+
+li.photo, li.video {
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+    height:100%;
+    width : 200px;
+    min-height:120px;
+    border:1px solid grey;
+    padding:4px;
+    margin:4px;
+    background-image: url('waiting.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 50px 50px;
+    white-space: nowrap;
+}
+
+li.video {
+    position: relative;;
+}
+
+div.videoTitle {
+    color: white;
+    position: absolute;
+    top: 40px;
+    left: 77px;
+}
+
+div.videoSize {
+    font-size:90%;
+    color: white;
+    position: absolute;
+    top: 60px;
+    left: 77px;
+}
+
+
+li.photo span {
+    display: inline-block;
+    vertical-align: middle;
+    height:100%;
+}
+
+img.photo {
+    padding:0px;
+    margin:0px;
+}
+
+div.photoName {
+    font-size: 60%;
+    vertical-align: middle;
+    text-align: center;
+    color:lightgray;
+}
+
+ul.folders {
+    margin:0px;
+    padding: 10px;
+}
+
+li.folderUp {
+    text-align: center;
+    font-size: 130%;
+    display: block;
+    width: 95%;
+    border:2px solid lightblue;
+    padding:10px;
+    margin:10px 30px 10px 30px;
+}
+
+li.folder {
+    text-align: center;
+    font-size: 130%;
+    display: block;
+    width: 95%;
+    border:2px solid grey;
+    padding:10px;
+    margin:10px 30px 10px 30px;
+    background-color: #191919;
+}
+
+img.photo {
+
+}
+
+
+div.htmlvideoclose {
+    text-align: center;
+    background-color: darkred;
+    font-size:150%;
+    color:white;
+    cursor:pointer;
+}
