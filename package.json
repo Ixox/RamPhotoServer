@@ -2,15 +2,18 @@
   "name": "photoserver",
   "version": "1.0.0",
   "description": "Nos photos",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "run": "node server.js"
   },
-  "author": "Xavier",
+  "author": "Xavier hosxe",
   "license": "ISC",
   "dependencies": {
     "caching-map": "^1.0.2",
-    "express": "^4.16.2",
-    "sharp": "^0.19.0"
+    "dotenv": "^16.0.0",
+    "express": "^4.17.2",
+    "express-session": "^1.17.2",
+    "sharp": "^0.30.1"
   }
 }

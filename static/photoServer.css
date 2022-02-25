@@ -181,3 +181,43 @@ div.htmlvideoclose {
     color:white;
     cursor:pointer;
 }
+
+div.login {
+    position: relative;    
+    top:50px;
+    margin:auto;
+    text-align: center;
+    height:180px;
+    width:800px;
+    background-color: black;
+    border:1px solid gray;
+}
+
+div.error {
+    border:1px solid red;
+}
+
+div.error h3 {
+    color: lightcoral;
+}
+
+div.login input {
+    margin:10px;
+    padding:5px;
+    background-color: white;
+    border: 0;
+    border-radius: .25rem;
+}
+
+
+/* CSS */
+input.button-6 {
+  height: 2.3rem;
+  width:5rem;
+  margin:3px;
+} 
+
+.button-6:hover,
+.button-6:focus {
+    background-color:lightgoldenrodyellow ;
+}

@@ -1,0 +1,11 @@
+version: "3"
+# 
+services:
+  app:
+    container_name: PhotoServer
+    image: xh-photo-server:latest
+    ports:
+      - "3333:3333"
+    volumes:
+      - '/srv/dev-disk-by-label-MainDisk/Photos:/app/photos:ro'
+    restart: always

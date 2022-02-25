@@ -1,0 +1,23 @@
+# syntax=docker/dockerfile:1
+FROM node:17-bullseye-slim AS node-sharp
+
+ENV NODE_ENV=production
+WORKDIR /app
+COPY . /app
+
+# python and gcc are used to build sharp npm library !
+RUN apt update && \
+    apt install python3 -y  && \
+    apt install build-essential -y  && \
+    npm install --production
+
+FROM  node:17-bullseye-slim 
+
+EXPOSE 3333
+VOLUME ["/app/photos"]
+WORKDIR /app
+
+COPY --from=node-sharp /app/node_modules /app/node_modules
+COPY . /app
+
+CMD ["node", "server.js"]

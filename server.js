@@ -1,39 +1,83 @@
-// index.js
-// 2018, Xavier Hosxe, https://github.com/ixox/photoServer
+// server.js
+// 2022, Xavier Hosxe, https://github.com/ixox/photoServer
 // Licensed under the MIT license.
 
+
+
 const express = require('express');
-const app = express();
+const session = require('express-session');
 const sharp = require('sharp');
+const path = require('path');
 const fs = require('fs');
 const Cache = require('caching-map');
-
-// Number of images in cache
-const smallImageCache = new Cache(20000);
-const bigImageCache = new Cache(1000);
-
-// Size to recalculate on server before sending over the network
-const smallPictureSize = 200;
-const bigPictureSize = 1920;
-
+const bodyParser = require('body-parser');
+const env = require('./utils/env.js');
+const { redirect } = require('express/lib/response');
 
 // Local folder of the server
-const installationPath = '/srv/dev-disk-by-label-MainDisk/dev/nodejs/photoServer';
+const installationPath = './';
+// The HTML static file that we'll modify at runtame
+var html = fs.readFileSync(installationPath + "/static/photoServer.html",  'utf8');
+// The Login static file with modieable class for error
+var loginHtml = fs.readFileSync(installationPath + "/static/login.html",  'utf8')
+    .replace("__CLASS__", 'login').replace("__TITLE__", "Password");
+var loginErrorHtml  = fs.readFileSync(installationPath + "/static/login.html",  'utf8')
+    .replace("__CLASS__", 'login error').replace("__TITLE__", "Wrong Password");
 
-// Photo root path
-const photoRootPath='/srv/dev-disk-by-label-MainDisk/Photos';
+// Number of images in cache
+const smallImageCache = new Cache(env.PHOTOS_SMALL_IMAGES_CACHE);
+const bigImageCache = new Cache(env.PHOTOS_BIG_IMAGES_CACHE);
 
+
+console.log("ENV");
+console.log(env);
+
+
+const app = express();
+app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use(session({
+    secret: 'keyboard cat',
+    resave: false,
+    saveUninitialized: true,
+    // cookie: {
+    //     secure: true,
+    //     expires: 3600000
+    //  },
+}));
+
+
+app.post("/userLogin", function(req, res, next) {
+    let passwd = req.body['pass']
+    console.log("LOGIN : password : "+ passwd);
+    if (passwd === env.PHOTOS_PASSWORD) {
+        req.session.loggedIn = true;
+        console.log("GOOD PASSWORD !");
+        res.redirect('/');
+    } else {
+        console.log("WRONG PASSWORD !");
+        res.send(loginErrorHtml);
+    }
+});
+
+// Can be used before loggin
 app.use('/static', express.static(installationPath + '/static'));
 
-String.prototype.replaceAll = function(search, replacement) {
-    var target = this;
-    return target.replace(new RegExp(search, 'g'), replacement);
-};
+// Black all request bellow if not logged in
+app.all('/*', function (req, res, next) {
+     console.log("ID : " + req.session.id);
+    console.log("LoggedIn : " + req.session.loggedIn);
+    console.log("env.PHOTOS_PASSWORD : " + env.PHOTOS_PASSWORD);
+
+    if (req.session.loggedIn || !env.PHOTOS_PASSWORD) {
+        next();
+    } else {
+        res.send(loginHtml);
+    }
+});
 
 
-var videoImg =  sharp({create: { width: 200, height: 150, channels: 3, background: { r: 0, g: 255, b: 0 } }}).png().toBuffer();
 var errorImg =  sharp({create: { width: 200, height: 150, channels: 3, background: { r: 150, g: 0, b: 0 } }}).png().toBuffer();
-
 
 // __P => the client requested a small Picture
 app.get('/__P/*', (req, res) =>
@@ -60,9 +104,8 @@ app.get('/__P/*', (req, res) =>
                });
                return;
            }
-           var path = photoRootPath + imageName;
-           sharp(path).resize(smallPictureSize, smallPictureSize)
-            .max()
+           var path = env.PHOTOS_PATH + imageName;
+           sharp(path, { failOnError: false }).resize(env.PHOTOS_SMALL_IMAGES_SIZE, env.PHOTOS_SMALL_IMAGES_SIZE, { fit: 'inside', withoutEnlargement : true})
             .rotate()
             .jpeg()
             .toBuffer()
@@ -70,7 +113,10 @@ app.get('/__P/*', (req, res) =>
                 smallImageCache.set(imageName, data);
                 res.send(data);
             })
-            .catch(err => errorImg.then(data => res.send(data)));
+            .catch(err => {
+                console.log("ERROR " + err);
+                return errorImg.then(data => res.send(data));
+            });
         } else {
             res.send(imgBuffer);
         }
@@ -79,13 +125,12 @@ app.get('/__P/*', (req, res) =>
 
 // __BigP => the client requested a big Picture
 app.get('/__BigP/*', (req, res) =>
-    {
+    {        
        var imageName = decodeURI(req.url.substring(8,  req.url.length));
        var imgBuffer = bigImageCache.get(imageName);
        if (!imgBuffer) {
-           var path = photoRootPath + imageName;
-           sharp(path).resize(bigPictureSize, bigPictureSize)
-            .max()
+           var path = env.PHOTOS_PATH + imageName;
+           sharp(path, { failOnError: false }).resize(env.PHOTOS_SMALL_BIG_IMAGES_SIZE, env.PHOTOS_SMALL_BIG_IMAGES_SIZE, { fit: 'inside'})
             .rotate()
             .jpeg()
             .toBuffer()
@@ -103,7 +148,7 @@ app.get('/__BigP/*', (req, res) =>
 app.get('/__V/*', (req, res) => 
     {
         var videoName = decodeURI(req.url.substring(5,  req.url.length));
-        var path = photoRootPath + '/' + videoName;
+        var path = env.PHOTOS_PATH + '/' + videoName;
 
         const stat = fs.statSync(path)
         const fileSize = stat.size
@@ -136,7 +181,7 @@ app.get('/__V/*', (req, res) =>
     }
 );
 
-// Any other UTL is a frolder
+// Any other URL is a folder
 app.get('/*', (req, res) =>
     {
         getHtml(req, res);
@@ -144,12 +189,8 @@ app.get('/*', (req, res) =>
 );
 
 
-// The HTML static file that we'll modify at runtame
-var html = fs.readFileSync(installationPath + "/static/photoServer.html",  'utf8');
-
-// 
-app.listen(3333, () => console.log('Pictures server is ready. Listening on port 3333.'));
-
+// Start listening
+app.listen(env.PHOTOS_PORT, () => console.log('Pictures server is ready. Listening on port '+ env.PHOTOS_PORT + "'."));
 
 // The main function that constructs the HTML file
 function getHtml(req, res) {
@@ -170,7 +211,7 @@ function getHtml(req, res) {
 
     var items;
     try {
-      items = fs.readdirSync(photoRootPath + relativePath);
+      items = fs.readdirSync(env.PHOTOS_PATH + relativePath);
     } catch (e) {
       // Folder does not exist
       var htmlToSend = html.replace('<TITLE_HERE/>', "Rien a voir ici").replace('<FOLDERS_HERE/>', ('')).replace('<PHOTOS_HERE/>', '');
@@ -184,7 +225,7 @@ function getHtml(req, res) {
 
     if (items) {
         for (var i=0; i<items.length; i++) {
-            var fullPath = photoRootPath + relativePath + '/' + items[i];
+            var fullPath = env.PHOTOS_PATH + relativePath + '/' + items[i];
             var fsStat = fs.lstatSync(fullPath);
             if (fsStat.isFile()) {
                 var upItemName = items[i].toUpperCase();
